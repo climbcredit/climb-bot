@@ -6,7 +6,7 @@ const get = require("lodash.get");
 const opn = require("opn");
 const { exec } = require("child_process");
 
-const { DIBSY_LOCAL } = process.env;
+const { SHERPA_LOCAL } = process.env;
 
 const isYoutubeUrl = url => {
   const conventionalMatch = url.match(/www\.youtube\.com\/watch\?v=(.+)/);
@@ -75,7 +75,7 @@ const formatVideoQueueObject = async (robot, res, url) => {
 
 const closeChrome = callback => {
   // console.log('Killing Chrome');
-  // if (DIBSY_LOCAL) {
+  // if (SHERPA_LOCAL) {
   //     callback();
   // } else {
   //     exec(`killall -9 "Google Chrome"`, (err, stdout, stderr) => {
@@ -89,12 +89,12 @@ const playTubeByUrl = (robot, queueObj) => {
   const url = queueObj.videoUrl;
   setQueueNowPlaying(robot, queueObj);
   pause().catch(e => {
-    robot.messageRoom("#dibsy-dev", e);
+    robot.messageRoom("#sherpa-dev", e);
     return; //this will 403 if spot is already paused, and we don't care about that.
   });
   closeChrome(() => {
     if (queueObj.hasNyanpic) {
-      robot.messageRoom("#music", queueObj.nyanpic);
+      robot.messageRoom("#dibsy-dev", queueObj.nyanpic);
     }
     opn(url);
   });

@@ -26,7 +26,7 @@ const getTimeRemainingOnPlayback = status => {
 };
 
 /*
-This file is responsible for formatting the responses that dibsy will actually send
+This file is responsible for formatting the responses that sherpa will actually send
 */
 
 const formatTrack = (robot, queueObj) => {

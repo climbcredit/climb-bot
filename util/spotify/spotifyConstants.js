@@ -11,7 +11,10 @@ module.exports = {
   spotifyAuthorizeUrl: "https://accounts.spotify.com/authorize/",
   spotifyTokenUrl: "https://accounts.spotify.com/api/token",
   spotifyPlaybackUrl: "https://api.spotify.com/v1/me/player",
-  spotifyPlaySongUrl: "https://api.spotify.com/v1/me/player/play",
+  spotifyPlaySongUrl: deviceId =>
+    `https://api.spotify.com/v1/me/player/play${
+      deviceId ? `?device_id=${deviceId}` : ""
+    }`,
   spotifyNextSongUrl: "https://api.spotify.com/v1/me/player/next",
   spotifyPauseUrl: "https://api.spotify.com/v1/me/player/pause",
   spotifyTrackUrl: id => `https://api.spotify.com/v1/tracks/${id}`,
@@ -27,5 +30,6 @@ module.exports = {
   spotifyGetAlbumTracksUrl: id =>
     `https://api.spotify.com/v1/albums/${id}/tracks?limit=50`,
   spotifyShuffleUrl: "https://api.spotify.com/v1/me/player/shuffle?state=true",
-  spotifyUserProfile: id => `https://api.spotify.com/v1/users/${id}`
+  spotifyUserProfile: id => `https://api.spotify.com/v1/users/${id}`,
+  spotifyDevicesUrl: `https://api.spotify.com/v1/me/player/devices`
 };

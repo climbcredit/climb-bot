@@ -11,7 +11,8 @@ const {
   findSongsByTerm,
   ensureShuffleOn,
   addSongToDefaultPlaylist,
-  getFullDefaultPlaylistTracklist
+  getFullDefaultPlaylistTracklist,
+  getDevices
 } = require("../util/spotify/spotifyRequester");
 
 const {
@@ -61,8 +62,8 @@ const {
 
 const get = require("lodash.get");
 const shuffle = require("lodash.shuffle");
-const { DIBSY_LOCAL } = process.env;
-const DIBSY_VOICE = "Victoria";
+const { SHERPA_LOCAL } = process.env;
+const SHERPA_VOICE = "Victoria";
 const { exec } = require("child_process");
 
 /*
@@ -102,6 +103,7 @@ const buildDefaultPlaylistLookup = robot => {
 const setupSpotify = robot => {
   setUpQueue(robot);
   evacuateSearchResults(robot);
+  getDevices(robot);
   return buildDefaultPlaylistLookup(robot).then(() => {
     playNext(robot);
   });
@@ -140,6 +142,7 @@ const getSongUriFromSearchTerm = (robot, res, term) => {
     return Promise.resolve((searchObj && searchObj.songUri) || null);
   } else {
     return findSongsByTerm(term).then(songs => {
+      console.log(songs);
       if (!songs.length) {
         res.send(`no results for search term ${term}`);
         return null;
@@ -190,7 +193,7 @@ module.exports = robot => {
       })
       .catch(() => {
         res.send(
-          "There was an error while attempting to restart spotify integration. Check #dibsy-logs for more info"
+          "There was an error while attempting to restart spotify integration. Check #sherpa-logs for more info"
         );
       });
   });
@@ -366,7 +369,7 @@ module.exports = robot => {
 
       //Set small delay (0.5 sec) to give music a chance to pause
       setTimeout(() => {
-        exec(`say -v ${DIBSY_VOICE} ${message}`, () => {
+        exec(`say -v ${SHERPA_VOICE} ${message}`, () => {
           res.send(":blush:");
           resumePlayback(robot);
         });

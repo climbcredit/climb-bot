@@ -62,7 +62,7 @@ Youtube videos look like this:
     type: "YOUTUBE"
 }
 
-Whenever a song is added to the queue (`dibsy queue abba super trouper`), a call is made to the Spotify API to get the time remaining on the currently playing song.
+Whenever a song is added to the queue (`sherpa queue abba super trouper`), a call is made to the Spotify API to get the time remaining on the currently playing song.
 Once we get that, we set a timeout for that amount of time (+ 200 ms). This is `playNextSongAfterCurrentSongIsDone`.
 When that timeout is hit, we check the playback status again. One of two things will be true:
     1) the same song is still playing (or paused). Note the time remaining, set another timeout, and check back then.
@@ -72,13 +72,13 @@ When that timeout is hit, we check the playback status again. One of two things 
 If there is at least one song in the queue, it will play it, get the music status, and set a timeout to check back when that song is done.
 If there is nothing in the queue, it play a song from the stored list of randomized uris from the default playlist.
 
-Doing `dibsy play abba mamma mia` invokes `playNow`, which works basically like `playNext` except it isn't smart and plays whatever you tell it to.
+Doing `sherpa play abba mamma mia` invokes `playNow`, which works basically like `playNext` except it isn't smart and plays whatever you tell it to.
 It will also set up the timeout.
 
 Some G O T C H A S:
 
 If a song is being added to the queue or played directly, we need to pass the responder object from the script file (probably `spotify.js`).
-This is so that we can pull the user ID off of it and add it to the object, so that `dibsy blame` will work.
+This is so that we can pull the user ID off of it and add it to the object, so that `sherpa blame` will work.
 
 Make sure that if you are manipulating the currently playing song that you are cancelling and resetting the timeout.
 There is a `cancelTimeout` utility to help you do this. If you don't, songs will get skipped prematurely or play at weird times.
@@ -145,7 +145,7 @@ const playSongWithRetry = async (songId, uri, robot, attempts) => {
     async err => {
       if (attempts > 10) {
         robot.messageRoom(
-          "#dibsy-dev",
+          "#sherpa-dev",
           `Ok, spotify is super stuck. I give up.`
         );
         throw new Error("Unable to start local spotify client");
@@ -153,14 +153,14 @@ const playSongWithRetry = async (songId, uri, robot, attempts) => {
       console.log("MASSIVE SPOTIFY ERROR");
       console.log(err);
       robot.messageRoom(
-        "#dibsy-dev",
-        `Dibsy is doing that thing where spotify gets stuck, I'm gonna try to kick it for you: ${err}`
+        "#sherpa-dev",
+        `Sherpa is doing that thing where spotify gets stuck, I'm gonna try to kick it for you: ${err}`
       );
-      await runApplescript('tell application "Spotify" to activate');
-      await runApplescript("delay 1");
-      await runApplescript(
-        `tell application "Spotify" to play track "${songId}"`
-      );
+      //   await runApplescript('tell application "Spotify" to activate');
+      //   await runApplescript("delay 1");
+      //   await runApplescript(
+      //     `tell application "Spotify" to play track "${songId}"`
+      //   );
       return playSongWithRetry(songId, uri, robot, attempts + 1);
     }
   );
@@ -175,7 +175,7 @@ const playSongAndSetTimeout = async (uri, robot) => {
       const songDuration = get(song, "duration_ms");
       if (!songDuration) {
         robot.messageRoom(
-          "#dibsy-dev",
+          "#sherpa-dev",
           `got an invalid duration for a song while trying to play it. song uri: ${uri} duration: ${songDuration}`
         );
         throw new Error("Invalid song duration");

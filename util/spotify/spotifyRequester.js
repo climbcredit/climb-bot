@@ -17,16 +17,19 @@ const {
   spotifyGetAlbumTracksUrl,
   spotifyShuffleUrl,
   spotifyDefaultPlaylistAddTrackUrl,
-  spotifyUserProfile
+  spotifyUserProfile,
+  spotifyDevicesUrl
 } = require("./spotifyConstants");
+
+const { getDefaultDevice, setDefaultDevice } = require("./spotifyBrainHelper");
 
 //ENVIRONMENT VARIABLES
 const spotClientId = process.env.SPOTIFY_CLIENT_ID;
 const spotClientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 const spotRefreshToken = process.env.SPOTIFY_REFRESH_TOKEN;
-const isLocal = process.env.DIBSY_LOCAL;
+const isLocal = process.env.SHERPA_LOCAL;
 const MESSAGE_LENGTH_LIMIT = 3500;
-const LOG_CHANNEL = "#dibsy-logs";
+const LOG_CHANNEL = "#sherpa-logs";
 const BACKTICKS = "```";
 const MESSAGE_INTERVAL = 500;
 let messageQueue = [];
@@ -80,7 +83,7 @@ const addToMessageQueue = (robot, messages) => {
 
 const logRequest = (robot, command, req) => {
   const messages = splitMessage("Request", command, req);
-  return !isLocal && addToMessageQueue(robot, messages);
+  return addToMessageQueue(robot, messages);
 };
 
 //Remove unwanted fields
@@ -115,7 +118,7 @@ const removeFields = res => {
 
 const logResponse = (robot, command, res) => {
   const messages = splitMessage("Response", command, removeFields(res));
-  return !isLocal && addToMessageQueue(robot, messages);
+  return addToMessageQueue(robot, messages);
 };
 
 //Helper functions for structuring headers
@@ -169,12 +172,17 @@ const _makeSpotRequest = ({ robot, command, url, method, body }) => {
       }
       return request(requestObj);
     })
-    .then(res => {
-      if (robot) {
-        logResponse(robot, command, res);
+    .then(
+      res => {
+        if (robot) {
+          logResponse(robot, command, res);
+        }
+        return res.body;
+      },
+      res => {
+        if (robot) logResponse(robot, command, res);
       }
-      return res.body;
-    });
+    );
 };
 
 //returns a music status object from spotify
@@ -207,13 +215,28 @@ const getSpotifyUserProfile = (userId, robot) => {
 };
 
 const playSong = (songUri, robot) => {
+  const defaultDeviceId = getDefaultDevice(robot);
   return _makeSpotRequest({
     robot,
     command: "Play Song",
-    url: spotifyPlaySongUrl,
+    url: spotifyPlaySongUrl(defaultDeviceId),
     method: "put",
     body: {
       uris: [songUri]
+    }
+  });
+};
+
+const getDevices = robot => {
+  return _makeSpotRequest({
+    robot,
+    command: "Get Devices",
+    url: spotifyDevicesUrl,
+    method: "get"
+  }).then(response => {
+    const active = response.devices.find(dev => dev.is_active === true);
+    if (active) {
+      setDefaultDevice(robot, active.id);
     }
   });
 };
@@ -366,5 +389,6 @@ module.exports = {
   ensureShuffleOn,
   addSongToDefaultPlaylist,
   getFullDefaultPlaylistTracklist,
-  getSpotifyUserProfile
+  getSpotifyUserProfile,
+  getDevices
 };
